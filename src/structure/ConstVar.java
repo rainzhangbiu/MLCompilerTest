@@ -25,6 +25,8 @@ public class ConstVar {
     public static final String DQ = "\"";
     public static final String RBRACE = "}";
     public static final String LBRACE = "{";
+    public static final String RBRACKET = "]";
+    public static final String LBRACKET = "[";
     public static final String RPAREN = ")";
     public static final String LPAREN = "(";
     public static final String COMMA = ",";
@@ -32,5 +34,7 @@ public class ConstVar {
 
     /* 注释符*/
 
+    /* 错误*/
+    public static final String ERROR = "错误    ： ";
 
 }

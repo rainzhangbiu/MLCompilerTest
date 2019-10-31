@@ -9,6 +9,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 /**
  * Standard ML词法分析类
@@ -383,7 +384,6 @@ public class Lexer {
     public TreeNode execute(String mlText) {
         setTokens(new ArrayList<Token>());
         setDisplayTokens(new ArrayList<Token>());
-        setNotation(false);
         StringReader stringReader = new StringReader(mlText);
         String eachLine = "";
         int lineNum = 1;
@@ -393,27 +393,22 @@ public class Lexer {
             try {
                 eachLine = reader.readLine();
                 if (eachLine != null) {
-                    if (isNotation() && !eachLine.contains("*/")) {
-                        eachLine += "\n";
-                        TreeNode temp = new TreeNode(eachLine);
-                        temp.add(new TreeNode("多行注释"));
-                        displayTokens.add(new Token(lineNum, 1, "注释", eachLine
-                                .substring(0, eachLine.length() - 1)));
-                        displayTokens.add(new Token(lineNum,
-                                eachLine.length() - 1, "换行符", "\n"));
-                        root.add(temp);
-                        lineNum++;
-                        continue;
-                    } else {
-                        root.add((executeLine(eachLine, lineNum)));
-                    }
+                    root.add((executeLine(eachLine, lineNum)));
                 }
                 lineNum++;
             } catch (IOException e) {
                 System.err.println("读取文本时出错了！");
             }
         }
-        //test
         return root;
     }
+
+    public static void main(String[] args){
+        Scanner input = new Scanner(System.in);
+        System.out.println("请输入ML文本: ");
+        String mltext = input.next();
+        Lexer lexer = new Lexer();
+        lexer.execute(mltext);
+    }
+
 }
