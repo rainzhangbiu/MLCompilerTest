@@ -11,6 +11,8 @@ public class ConstVar {
     public static final String EQUAL = "==";
     public static final String ASSIGN = "=";
     public static final String NEGATE = "~";
+    public static final String MOD = "mod";
+    public static final String DIV = "div";
 
     /* 保留字 */
     public static final String IF = "if";

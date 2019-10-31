@@ -136,6 +136,19 @@ public class Lexer {
             return false;
     }
 
+    /**
+     * 识别字母运算符
+     * @param str
+     * @return
+     */
+    private static boolean isOperator(String str){
+        if(str.equals("div") || str.equals("mod")){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
     //暂时还清楚该方法的作用
     private static int find(int begin,String str){
         if(begin>=str.length())
@@ -342,6 +355,10 @@ public class Lexer {
                                 node.add(new TreeNode("标识符: " + id));
                                 tokens.add(new Token(lineNum, begin + 1, "标识符", id));
                                 displayTokens.add(new Token(lineNum, begin + 1, "标识符", id));
+                            }else if(isOperator(id)){
+                                node.add(new TreeNode("运算符: " + id));
+                                tokens.add(new Token(lineNum, begin + 1, "运算符", id));
+                                displayTokens.add(new Token(lineNum, begin + 1, "运算符", id));
                             }
                             i--;
                             state = 0;
