@@ -16,12 +16,11 @@ import java.util.Scanner;
  *
  * @author 章雨
  *
- * 参考链接:https://github.com/WuXianglong/CMMCompiler/blob/master/CMMCompiler/src/compiler/CMMLexer.java
  */
 public class Lexer {
     //注释的标志
     private boolean isNotation=false;
-    //分析后得到的Tokensjihe，用于之后的语法以及语义分析
+    //分析后得到的Tokens集合，用于之后的语法以及语义分析
     private ArrayList<Token> tokens=new ArrayList<Token>();
     //分析后得到的所有Token集，包含注释，空格等
     private ArrayList<Token> displayTokens=new ArrayList<Token>();
@@ -40,7 +39,7 @@ public class Lexer {
         return tokens;
     }
 
-    public void setTokens(ArrayList<Token> tokens){
+    private void setTokens(ArrayList<Token> tokens){
         this.tokens=tokens;
     }
 
@@ -48,105 +47,91 @@ public class Lexer {
         return displayTokens;
     }
 
-    public void setDisplayTokens(ArrayList<Token> displayToken){
-        this.displayTokens=displayTokens;
+    private void setDisplayTokens(ArrayList<Token> displayToken){
+        this.displayTokens = displayTokens;
     }
 
     /**
      * 识别字母的方法
      *
-     * @param c
+     * @param c 当前字符
      *
-     * @return
+     * @return boolean
      */
     private static boolean isLetter(char c){
-        if((c>='a'&&c<='z')||(c>='A'&&c<='Z')||c=='_')
-            return true;
-        return false;
+        return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
     }
 
     /**
-     * 识别数字的方法
+     * 识别数字
      *
-     * @param c
+     * @param c 当前字符
      *
-     * @return
+     * @return boolean
      */
     private static boolean isDigit(char c){
-        if(c>='0'&&c<='9')
-            return true;
-        return false;
+        return c >= '0' && c <= '9';
     }
 
     /**
      * 识别正确的整数，排除多个零的情况
      *
-     * @param input
+     * @param input 要判断的字符串
      *
-     * @return
+     * @return boolean
      */
     private static boolean matchInteger(String input){
-        //理解matches方法
-        if(input.matches("^-?\\d+$")&&input.matches("^-?0{1,}\\d+$"))
-            return true;
-        else
-            return false;
+        return input.matches("^-?\\d+$") && !input.matches("^-?0{1,}\\d+$");
     }
 
     /**
      * 识别正确的实数：排除00.000的情况
      *
-     * @param input
+     * @param input 要判断的字符串
      *
-     * @return
+     * @return boolean
      */
     private static boolean matchReal(String input){
-        if(input.matches("^(-?\\\\d+)(\\\\.\\\\d+)+$"))
-            return true;
-        else
-            return false;
+        return input.matches("^(-?\\\\d+)(\\\\.\\\\d+)+$");
     }
 
     /**
      *
      * 识别正确的标识符：以字母开头，由数字、字母、下划线、单引号组成
      *
-     * @param input
+     * @param input 要判断的字符
      *
-     * @return
+     * @return boolean
      */
     private static boolean matchID(String input){
-        if(input.matches("^\\w+$") && !input.endsWith("_") && input.substring(0, 1).matches("[A-Za-z]"))
-            return true;
-        else
-            return false;
+        return input.matches("^\\w+$") && !input.endsWith("_") && input.substring(0, 1).matches("[A-Za-z]");
     }
 
     /**
      * 识别保留字
      *
-     * @param str
+     * @param input 要输入的字符串
      *
-     * @return
+     * @return boolean
      */
-    private static boolean isKey(String str){
-        if(str.equals("if")||str.equals("else")||str.equals("then")||str.equals("val")||str.equals("true")||str.equals("false"))
-            return true;
-        else
-            return false;
+    private static boolean isKey(String input){
+        return input.equals("if") || input.equals("else") || input.equals("then")
+                || input.equals("val") || input.equals("true") || input.equals("false")
+                || input.equals("string") || input.equals("int") || input.equals("bool")
+                || input.equals("char") || input.equals("and") || input.equals("real")
+                || input.equals("let") || input.equals("local") || input.equals("in")
+                || input.equals("end") ;
     }
 
     /**
      * 识别字母运算符
-     * @param str
-     * @return
+     *
+     * @param input 要判断的字符串
+     *
+     * @return boolean
      */
-    private static boolean isOperator(String str){
-        if(str.equals("div") || str.equals("mod")){
-            return true;
-        }else{
-            return false;
-        }
+    private static boolean isOperator(String input){
+        return input.equals("div") || input.equals("mod");
     }
 
     //暂时还清楚该方法的作用
@@ -167,11 +152,11 @@ public class Lexer {
     /**
      * 分析一行ML程序，并返回一行得到的TreeNode
      *
-     * @param mlText
+     * @param mlText 一行ml程序
      *
-     * @lineNum
+     * @lineNum 行号
      *
-     * @return
+     * @return 一个树节点
      */
     private TreeNode executeLine(String mlText, int lineNum){
         //创建当前行的根节点
@@ -204,7 +189,7 @@ public class Lexer {
                     //循环程序开始时进入case 0
                     case 0:
                         //分隔符直接打印
-                        if(ch == '(' || ch == ')' || ch == '{' || ch == '}' || ch == ';' || ch == ',')
+                        if(ch == '(' || ch == ')' || ch == '{' || ch == '}' || ch == ';' || ch == ',' || ch == ':')
                             state = 0 ;
                         else if (ch == '+')
                             state = 1;
@@ -236,7 +221,7 @@ public class Lexer {
                             tokens.add(new Token(lineNum,begin,"分隔符",ConstVar.DQ));
                             displayTokens.add(new Token(lineNum,begin,"分隔符",ConstVar.DQ));
                         }
-                        //取反
+                        //取反,未实现
                         else if(ch == '~'){
                             state = 11;
                         }
@@ -309,10 +294,18 @@ public class Lexer {
                         }
                         break;
                     case 6:
-                       node.add(new TreeNode("运算符" + ConstVar.LT));
-                       tokens.add(new Token(lineNum, i, "运算符", ConstVar.LT));
-                       displayTokens.add(new Token(lineNum, i, "运算符", ConstVar.LT));
-                       i--;
+                        if (ch == '>'){
+                            node.add(new TreeNode("运算符 ： " + ConstVar.NEQUAL));
+                            tokens.add(new Token(lineNum, i, "运算符",
+                                    ConstVar.NEQUAL));
+                            displayTokens.add(new Token(lineNum, i, "运算符",
+                                    ConstVar.NEQUAL));
+                        }else {
+                            node.add(new TreeNode("运算符" + ConstVar.LT));
+                            tokens.add(new Token(lineNum, i, "运算符", ConstVar.LT));
+                            displayTokens.add(new Token(lineNum, i, "运算符", ConstVar.LT));
+                            i--;
+                        }
                        state = 0;
                        break;
                     case 7:
@@ -356,9 +349,15 @@ public class Lexer {
                                 tokens.add(new Token(lineNum, begin + 1, "标识符", id));
                                 displayTokens.add(new Token(lineNum, begin + 1, "标识符", id));
                             }else if(isOperator(id)){
-                                node.add(new TreeNode("运算符: " + id));
-                                tokens.add(new Token(lineNum, begin + 1, "运算符", id));
-                                displayTokens.add(new Token(lineNum, begin + 1, "运算符", id));
+                                if(id.equals("div")) {
+                                    node.add(new TreeNode("运算符: " + ConstVar.DIV));
+                                    tokens.add(new Token(lineNum, begin + 1, "运算符", ConstVar.DIV));
+                                    displayTokens.add(new Token(lineNum, begin + 1, "运算符", ConstVar.DIV));
+                                }else if (id.equals("mod")){
+                                    node.add(new TreeNode("运算符: " + ConstVar.MOD));
+                                    tokens.add(new Token(lineNum, begin + 1, "运算符", ConstVar.MOD));
+                                    displayTokens.add(new Token(lineNum, begin + 1, "运算符", ConstVar.MOD));
+                                }
                             }
                             i--;
                             state = 0;
@@ -392,10 +391,9 @@ public class Lexer {
     }
 
     /**
-     * 分析ML程序，并返回词法分析结果的根节点
+     * 按行读取ML程序，并执行executeLine方法
      *
-     * @param mlText
-     * ML文本
+     * @param mlText ML文本
      * @return 词法分析结果跟节点
      */
     public TreeNode execute(String mlText) {
@@ -423,9 +421,12 @@ public class Lexer {
     public static void main(String[] args){
         Scanner input = new Scanner(System.in);
         System.out.println("请输入ML文本: ");
-        String mltext = input.next();
+        String mltext = input.nextLine();
         Lexer lexer = new Lexer();
-        lexer.execute(mltext);
+        while (!mltext.equals("\n")) {
+            lexer.execute(mltext);
+            mltext = input.next();
+        }
     }
 
 }

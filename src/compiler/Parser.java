@@ -98,12 +98,11 @@ public class Parser {
     }
 
     /**
-     * statement: if_stm | while_stm | read_stm | write_stm | assign_stm |
-     * declare_stm | for_stm;
+     * statement: if_stm | assign_stm |declare_stm ;
      *
      * @return TreeNode
      */
-    private final TreeNode statement() {
+    private TreeNode statement() {
         // 保存要返回的结点
         TreeNode tempNode = null;
         // 赋值语句
@@ -115,11 +114,6 @@ public class Parser {
                 && currentToken.getContent().equals(ConstVar.VAL)){
             tempNode = declare_stm();
         }
-        // For循环语句
-        else if (currentToken != null
-                && currentToken.getContent().equals(ConstVar.FOR)) {
-            tempNode = for_stm();
-        }
         // If条件语句
         else if (currentToken != null
                 && currentToken.getContent().equals(ConstVar.IF)) {
@@ -129,114 +123,12 @@ public class Parser {
     }
 
     /**
-     * for_stm :FOR LPAREN (assign_stm) SEMICOLON condition SEMICOLON assign_stm
-     * RPAREN LBRACE statement RBRACE;
-     *
-     * @return TreeNode
-     */
-    private final TreeNode for_stm() {
-        // 是否有大括号,默认为true
-        boolean hasBrace = true;
-        // if函数返回结点的根结点
-        TreeNode forNode = new TreeNode("关键字", "for", currentToken.getLine());
-        nextToken();
-        // 匹配左括号(
-        if (currentToken != null
-                && currentToken.getContent().equals(ConstVar.LPAREN)) {
-            nextToken();
-        } else { // 报错
-            String error = " for循环语句缺少左括号\"(\"" + "\n";
-            error(error);
-            forNode.add(new TreeNode(ConstVar.ERROR + "for循环语句缺少左括号\"(\""));
-        }
-        // initialization
-        TreeNode initializationNode = new TreeNode("initialization",
-                "Initialization", currentToken.getLine());
-        initializationNode.add(assign_stm(true));
-        forNode.add(initializationNode);
-        // 匹配分号;
-        if (currentToken != null
-                && currentToken.getContent().equals(ConstVar.SEMICOLON)) {
-            nextToken();
-        } else {
-            String error = " for循环语句缺少分号\";\"" + "\n";
-            error(error);
-            return new TreeNode(ConstVar.ERROR + "for循环语句缺少分号\";\"");
-        }
-        // condition
-        TreeNode conditionNode = new TreeNode("condition", "Condition",
-                currentToken.getLine());
-        conditionNode.add(condition());
-        forNode.add(conditionNode);
-        // 匹配分号;
-        if (currentToken != null
-                && currentToken.getContent().equals(ConstVar.SEMICOLON)) {
-            nextToken();
-        } else {
-            String error = " for循环语句缺少分号\";\"" + "\n";
-            error(error);
-            return new TreeNode(ConstVar.ERROR + "for循环语句缺少分号\";\"");
-        }
-        // change
-        TreeNode changeNode = new TreeNode("change", "Change", currentToken
-                .getLine());
-        changeNode.add(assign_stm(true));
-        forNode.add(changeNode);
-        // 匹配右括号)
-        if (currentToken != null
-                && currentToken.getContent().equals(ConstVar.RPAREN)) {
-            nextToken();
-        } else { // 报错
-            String error = " if条件语句缺少右括号\")\"" + "\n";
-            error(error);
-            forNode.add(new TreeNode(ConstVar.ERROR + "if条件语句缺少右括号\")\""));
-        }
-        // 匹配左大括号{
-        if (currentToken != null
-                && currentToken.getContent().equals(ConstVar.LBRACE)) {
-            nextToken();
-        } else {
-            hasBrace = false;
-        }
-        // statement
-        TreeNode statementNode = new TreeNode("statement", "Statements",
-                currentToken.getLine());
-        forNode.add(statementNode);
-        if(hasBrace) {
-            while (currentToken != null) {
-                if (!currentToken.getContent().equals(ConstVar.RBRACE))
-                    statementNode.add(statement());
-                else if (statementNode.getChildCount() == 0) {
-                    forNode.remove(forNode.getChildCount() - 1);
-                    statementNode.setContent("EmptyStm");
-                    forNode.add(statementNode);
-                    break;
-                } else {
-                    break;
-                }
-            }
-            // 匹配右大括号}
-            if (currentToken != null
-                    && currentToken.getContent().equals(ConstVar.RBRACE)) {
-                nextToken();
-            } else { // 报错
-                String error = " if条件语句缺少右大括号\"}\"" + "\n";
-                error(error);
-                forNode.add(new TreeNode(ConstVar.ERROR + "if条件语句缺少右大括号\"}\""));
-            }
-        } else {
-            statementNode.add(statement());
-        }
-        return forNode;
-    }
-
-    /**
      * if_stm: IF LPAREN condition RPAREN LBRACE statement RBRACE (ELSE LBRACE
      * statement RBRACE)?;
      *
      * @return TreeNode
      */
-    private final TreeNode if_stm() {
+    private TreeNode if_stm() {
         // if语句是否有大括号,默认为true
         boolean hasIfBrace = true;
         // else语句是否有大括号,默认为true
@@ -346,7 +238,7 @@ public class Parser {
      *            是否是在for循环中调用
      * @return TreeNode
      */
-    private final TreeNode assign_stm(boolean isFor) {
+    private TreeNode assign_stm(boolean isFor) {
         // assign函数返回结点的根结点
         TreeNode assignNode = new TreeNode("运算符", ConstVar.ASSIGN, currentToken
                 .getLine());
@@ -386,12 +278,12 @@ public class Parser {
     }
 
     /**
-     * declare_stm: (INT | REAL | BOOL | STRING) declare_aid(COMMA declare_aid)*
+     * declare_stm: (VAL) declare_aid(COMMA declare_aid)*
      * SEMICOLON;
      *
      * @return TreeNode
      */
-    private final TreeNode declare_stm() {
+    private TreeNode declare_stm() {
         TreeNode declareNode = new TreeNode("关键字", currentToken.getContent(),
                 currentToken.getLine());
         nextToken();
@@ -429,7 +321,7 @@ public class Parser {
      *            根结点
      * @return TreeNode
      */
-    private final TreeNode declare_aid(TreeNode root) {
+    private TreeNode declare_aid(TreeNode root) {
         if (currentToken != null && currentToken.getKind().equals("标识符")) {
             TreeNode idNode = new TreeNode("标识符", currentToken.getContent(),
                     currentToken.getLine());
@@ -473,7 +365,7 @@ public class Parser {
      *
      * @return TreeNode
      */
-    private final TreeNode condition() {
+    private TreeNode condition() {
         // 记录expression生成的结点
         TreeNode tempNode = expression();
         // 如果条件判断为比较表达式
@@ -495,7 +387,7 @@ public class Parser {
      *
      * @return TreeNode
      */
-    private final TreeNode expression() {
+    private TreeNode expression() {
         // 记录term生成的结点
         TreeNode tempNode = term();
 
@@ -517,7 +409,7 @@ public class Parser {
      *
      * @return TreeNode
      */
-    private final TreeNode term() {
+    private TreeNode term() {
         // 记录factor生成的结点
         TreeNode tempNode = factor();
 
@@ -540,7 +432,7 @@ public class Parser {
      *
      * @return TreeNode
      */
-    private final TreeNode factor() {
+    private TreeNode factor() {
         // 保存要返回的结点
         TreeNode tempNode = null;
         if (currentToken != null && currentToken.getKind().equals("整数")) {
@@ -608,7 +500,7 @@ public class Parser {
      *
      * @return TreeNode
      */
-    private final TreeNode array() {
+    private TreeNode array() {
         // 保存要返回的结点
         TreeNode tempNode = null;
         if (currentToken != null
@@ -637,7 +529,7 @@ public class Parser {
      *
      * @return TreeNode
      */
-    private final TreeNode add_op() {
+    private TreeNode add_op() {
         // 保存要返回的结点
         TreeNode tempNode = null;
         if (currentToken != null
@@ -663,7 +555,7 @@ public class Parser {
      *
      * @return TreeNode
      */
-    private final TreeNode mul_op() {
+    private TreeNode mul_op() {
         // 保存要返回的结点
         TreeNode tempNode = null;
         if (currentToken != null
@@ -689,7 +581,7 @@ public class Parser {
      *
      * @return TreeNode
      */
-    private final TreeNode comparison_op() {
+    private TreeNode comparison_op() {
         // 保存要返回的结点
         TreeNode tempNode = null;
         if (currentToken != null
