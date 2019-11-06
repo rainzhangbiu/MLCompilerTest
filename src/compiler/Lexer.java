@@ -180,7 +180,7 @@ public class Lexer {
                     || ch == '}' || ch == ',' || ch == '+' || ch == '~'
                     || ch == '-' || ch == '*' || ch == '/'
                     || ch == '=' || ch == '<' || ch == '>' || ch == '"'
-                    || isLetter(ch) || isDigit(ch)
+                    || isLetter(ch) || isDigit(ch) || ch == '.'
                     || String.valueOf(ch).equals(" ")
                     || String.valueOf(ch).equals("\n")
                     || String.valueOf(ch).equals("\r")
@@ -221,7 +221,7 @@ public class Lexer {
                             tokens.add(new Token(lineNum,begin,"分隔符",ConstVar.DQ));
                             displayTokens.add(new Token(lineNum,begin,"分隔符",ConstVar.DQ));
                         }
-                        //取反,未实现
+                        //取反
                         else if(ch == '~'){
                             state = 11;
                         }
