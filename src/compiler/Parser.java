@@ -121,115 +121,61 @@ public class Parser {
                 && currentToken.getContent().equals(ConstVar.IF)) {
             tempNode = if_stm();
         }
+        //类型约束
+        else if (currentToken != null
+                && currentToken.getContent().equals(ConstVar.TYPE)){
+            tempNode = type_stm();
+        }
         return tempNode;
     }
 
     /**
-     * if_stm: IF LPAREN condition RPAREN LBRACE statement RBRACE (ELSE LBRACE
-     * statement RBRACE)?;
+     * if_stm: IF condition THEN statement ELSE statement SEMICOLON;
      *
      * @return TreeNode
      */
     private TreeNode if_stm() {
-        // if语句是否有大括号,默认为true
-        boolean hasIfBrace = true;
-        // else语句是否有大括号,默认为true
-        boolean hasElseBrace = true;
         // if函数返回结点的根结点
         TreeNode ifNode = new TreeNode("关键字", "if", currentToken.getLine());
         nextToken();
-        // 匹配左括号(
-        if (currentToken != null
-                && currentToken.getContent().equals(ConstVar.LPAREN)) {
-            nextToken();
-        } else { // 报错
-            String error = " if条件语句缺少左括号\"(\"" + "\n";
-            error(error);
-            ifNode.add(new TreeNode(ConstVar.ERROR + "if条件语句缺少左括号\"(\""));
-        }
         // condition
         TreeNode conditionNode = new TreeNode("condition", "Condition",
                 currentToken.getLine());
         ifNode.add(conditionNode);
         conditionNode.add(condition());
-        // 匹配右括号)
-        if (currentToken != null
-                && currentToken.getContent().equals(ConstVar.RPAREN)) {
+        //匹配THEN
+        if (currentToken != null && currentToken.getContent().equals(ConstVar.THEN)){
+            // statement
+            TreeNode statementNode = new TreeNode("statement", "Statements",
+                    currentToken.getLine());
+            ifNode.add(statementNode);
             nextToken();
-        } else { // 报错
-            String error = " if条件语句缺少右括号\")\"" + "\n";
-            error(error);
-            ifNode.add(new TreeNode(ConstVar.ERROR + "if条件语句缺少右括号\")\""));
-        }
-        // 匹配左大括号{
-        if (currentToken != null
-                && currentToken.getContent().equals(ConstVar.LBRACE)) {
-            nextToken();
-        } else {
-            hasIfBrace = false;
-        }
-        // statement
-        TreeNode statementNode = new TreeNode("statement", "Statements",
-                currentToken.getLine());
-        ifNode.add(statementNode);
-        if (hasIfBrace) {
-            while (currentToken != null) {
-                if (!currentToken.getContent().equals(ConstVar.RBRACE))
-                    statementNode.add(statement());
-                else if (statementNode.getChildCount() == 0) {
-                    ifNode.remove(ifNode.getChildCount() - 1);
-                    statementNode.setContent("EmptyStm");
-                    ifNode.add(statementNode);
-                    break;
-                } else {
-                    break;
-                }
-            }
-            // 匹配右大括号}
-            if (currentToken != null
-                    && currentToken.getContent().equals(ConstVar.RBRACE)) {
-                nextToken();
-            } else { // 报错
-                String error = " if条件语句缺少右大括号\"}\"" + "\n";
-                error(error);
-                ifNode.add(new TreeNode(ConstVar.ERROR + "if条件语句缺少右大括号\"}\""));
-            }
-        } else {
             if (currentToken != null)
                 statementNode.add(statement());
+            nextToken();
+        } else {
+            String error = " 缺少关键字THEN" + "\n";
+            error(error);
+            ifNode.add(new TreeNode(ConstVar.ERROR
+                    + "缺少关键字THEN"));
+            nextToken();
         }
+        //匹配ELSE
         if (currentToken != null
                 && currentToken.getContent().equals(ConstVar.ELSE)) {
             TreeNode elseNode = new TreeNode("关键字", ConstVar.ELSE, currentToken
                     .getLine());
             ifNode.add(elseNode);
             nextToken();
-            // 匹配左大括号{
-            if (currentToken.getContent().equals(ConstVar.LBRACE)) {
-                nextToken();
-            } else {
-                hasElseBrace = false;
-            }
-            if (hasElseBrace) {
-                // statement
-                while (currentToken != null
-                        && !currentToken.getContent().equals(ConstVar.RBRACE)) {
-                    elseNode.add(statement());
-                }
-                // 匹配右大括号}
-                if (currentToken != null
-                        && currentToken.getContent().equals(ConstVar.RBRACE)) {
-                    nextToken();
-                } else { // 报错
-                    String error = " else语句缺少右大括号\"}\"" + "\n";
-                    error(error);
-                    elseNode.add(new TreeNode(ConstVar.ERROR
-                            + "else语句缺少右大括号\"}\""));
-                }
-            } else {
-                if (currentToken != null)
-                    elseNode.add(statement());
-            }
+            if (currentToken != null)
+                elseNode.add(statement());
+            nextToken();
+        }else {
+            String error = " 缺少关键字ELSE" + "\n";
+            error(error);
+            ifNode.add(new TreeNode(ConstVar.ERROR
+                    + "缺少关键字ELSE"));
+            nextToken();
         }
         return ifNode;
     }
@@ -266,6 +212,7 @@ public class Parser {
             String error = " 赋值语句缺少分号\";\"" + "\n";
             error(error);
             assignNode.add(new TreeNode(ConstVar.ERROR + "赋值语句缺少分号\";\""));
+            nextToken();
         }
         return assignNode;
     }
@@ -319,7 +266,8 @@ public class Parser {
         } else { // 报错
             String error = " 声明语句缺少分号\";\"" + "\n";
             error(error);
-            root.add(new TreeNode(ConstVar.ERROR + "声明语句缺少分号\";\""));
+            declareNode.add(new TreeNode(ConstVar.ERROR + "声明语句缺少分号\";\""));
+            nextToken();
         }
         return declareNode;
     }
@@ -348,18 +296,20 @@ public class Parser {
             String error = " val声明语句缺少冒号\";\"" + "\n";
             error(error);
             root.add(new TreeNode(ConstVar.ERROR + "val声明语句缺少冒号\";\""));
+            nextToken();
         }
         //匹配类型关键字
         if (currentToken != null && (currentToken.getContent().equals(ConstVar.INT)
                 || currentToken.getContent().equals(ConstVar.STRING)
                 || currentToken.getContent().equals(ConstVar.CHAR)
-                || currentToken.getContent().equals(ConstVar.BOOL) )){
+                || currentToken.getContent().equals(ConstVar.BOOL)
+                || currentToken.getContent().equals(ConstVar.REAL) )){
             root.add(new TreeNode("关键字", currentToken.getContent(), currentToken.getLine()));
             nextToken();
         }else {
-            String error = " 声明语句中没有冒号" + "\n";
+            String error = " 声明语句中缺少类型关键字" + "\n";
             error(error);
-            root.add(new TreeNode(ConstVar.ERROR + "声明语句中没有冒号"));
+            root.add(new TreeNode(ConstVar.ERROR + "声明语句中缺少类型关键字"));
             nextToken();
         }
         //匹配赋值符号
@@ -378,24 +328,42 @@ public class Parser {
     }
 
     /**
-     * condition: expression (comparison_op expression)? | ID;
+     * condition: (expression (comparison_op expression)? | ID) COLON type;
      *
      * @return TreeNode
      */
     private TreeNode condition() {
         // 记录expression生成的结点
         TreeNode tempNode = expression();
+        nextToken();
         // 如果条件判断为比较表达式
         if (currentToken != null
                 && (currentToken.getContent().equals(ConstVar.EQUAL)
                 || currentToken.getContent().equals(ConstVar.LT)
-                || currentToken.getContent().equals(ConstVar.GT))) {
+                || currentToken.getContent().equals(ConstVar.GT)
+                || currentToken.getContent().equals(ConstVar.NEQUAL))) {
             TreeNode comparisonNode = comparison_op();
             comparisonNode.add(tempNode);
             comparisonNode.add(expression());
             return comparisonNode;
+        } else if (currentToken != null && currentToken.getContent().equals(ConstVar.COLON)){//匹配冒号
+            tempNode.add(new TreeNode("分隔符", ConstVar.COLON, currentToken.getLine()));
+            nextToken();
         }
-        // 如果条件判断为bool变量
+        //匹配类型关键字
+        if (currentToken != null && (currentToken.getContent().equals(ConstVar.INT)
+                || currentToken.getContent().equals(ConstVar.STRING)
+                || currentToken.getContent().equals(ConstVar.CHAR)
+                || currentToken.getContent().equals(ConstVar.BOOL)
+                || currentToken.getContent().equals(ConstVar.REAL) )){
+            tempNode.add(new TreeNode("关键字", currentToken.getContent(), currentToken.getLine()));
+            nextToken();
+        }else {
+            String error = " 类型断言语句中缺少类型关键字" + "\n";
+            error(error);
+            tempNode.add(new TreeNode(ConstVar.ERROR + "类型断言语句中缺少类型关键字"));
+            nextToken();
+        }
         return tempNode;
     }
 
@@ -445,7 +413,7 @@ public class Parser {
 
     /**
      * factor : TRUE | FALSE | REAL_LITERAL | INTEGER_LITERAL | ID | LPAREN
-     * expression RPAREN | DQ string DQ | ID array;
+     * expression RPAREN | DQ string DQ
      *
      * @return TreeNode
      */
@@ -590,4 +558,49 @@ public class Parser {
         }
         return tempNode;
     }
+    /**
+     * type_stm:TYPE ID ASSIGN type
+     *
+     * @ return TreeNode
+     */
+    private TreeNode type_stm(){
+        TreeNode typeNode = new TreeNode("关键字", ConstVar.TYPE,currentToken.getLine());
+        nextToken();
+        //匹配标识符
+        if (currentToken != null && currentToken.getKind().equals("标识符")){
+            typeNode.add(new TreeNode("标识符", currentToken.getContent(), currentToken.getLine()));
+            nextToken();
+        } else {
+            String error = "  类型约束语句中缺少标识符" + "\n";
+            error(error);
+            typeNode.add(new TreeNode(ConstVar.ERROR + "类型约束语句中缺少标识符"));
+            nextToken();
+        }
+        //匹配赋值符号
+        if (currentToken != null && currentToken.getContent().equals(ConstVar.ASSIGN)){
+            typeNode.add(new TreeNode("分隔符", ConstVar.ASSIGN, currentToken.getLine()));
+            nextToken();
+        } else {
+            String error = " 类型约束语句缺少\"=\"" + "\n";
+            error(error);
+            typeNode.add(new TreeNode(ConstVar.ERROR + "\" 类型约束语句缺少\\\"=\\\"\" "));
+            nextToken();
+        }
+        //匹配类型关键字
+        if (currentToken != null && (currentToken.getContent().equals(ConstVar.INT)
+                || currentToken.getContent().equals(ConstVar.STRING)
+                || currentToken.getContent().equals(ConstVar.CHAR)
+                || currentToken.getContent().equals(ConstVar.BOOL)
+                || currentToken.getContent().equals(ConstVar.REAL) )){
+            typeNode.add(new TreeNode("关键字", currentToken.getContent(), currentToken.getLine()));
+            nextToken();
+        }else {
+            String error = " 类型约束语句中缺少类型关键字" + "\n";
+            error(error);
+            typeNode.add(new TreeNode(ConstVar.ERROR + "类型约束语句中缺少类型关键字"));
+            nextToken();
+        }
+        return typeNode;
+    }
+
 }

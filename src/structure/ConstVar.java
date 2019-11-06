@@ -32,6 +32,7 @@ public class ConstVar {
     public static final String CHAR = "char";
     public static final String BOOL = "bool";
     public static final String AND = "and";
+    public static final String TYPE = "type";
 
 
     /* 分隔符*/
@@ -42,7 +43,6 @@ public class ConstVar {
     public static final String LBRACKET = "[";
     public static final String RPAREN = ")";
     public static final String LPAREN = "(";
-    public static final String COMMA = ",";
     public static final String SEMICOLON = ";";
     public static final String COLON = ":";
 
