@@ -217,7 +217,6 @@ public class Lexer {
                         else if(String.valueOf(ch).equals(ConstVar.DQ)){
                             begin = i + 1;
                             state = 10;
-                            node.add(new TreeNode("分隔符：" + ch));
                             tokens.add(new Token(lineNum,begin,"分隔符",ConstVar.DQ));
                             displayTokens.add(new Token(lineNum,begin,"分隔符",ConstVar.DQ));
                         }
@@ -248,7 +247,6 @@ public class Lexer {
                         break;
 
                     case 1:
-                        node.add(new TreeNode("运算符： " + ConstVar.PLUS));
                         tokens.add(new Token(lineNum, i, "运算符", ConstVar.PLUS));
                         displayTokens.add(new Token(lineNum,i,"运算符", ConstVar.PLUS));
                         //如果没有，则会跳过一个字符
@@ -257,7 +255,6 @@ public class Lexer {
                         break;
 
                     case 2:
-                        node.add(new TreeNode("运算符： " + ConstVar.MINUS));
                         tokens.add(new Token(lineNum, i, "运算符： ", ConstVar.MINUS));
                         displayTokens.add(new Token(lineNum, i, "运算符： ", ConstVar.MINUS));
                         i--;
@@ -265,7 +262,6 @@ public class Lexer {
                         break;
 
                     case 3:
-                        node.add(new TreeNode("运算符" +  ConstVar.TIMES));
                         tokens.add(new Token(lineNum, i, "运算符", ConstVar.TIMES));
                         displayTokens.add(new Token(lineNum, i, "运算符", ConstVar.TIMES));
                         i--;
@@ -273,7 +269,6 @@ public class Lexer {
                         break;
 
                     case 4:
-                        node.add(new TreeNode("运算符" + ConstVar.DIVIDE));
                         tokens.add(new Token(lineNum, i, "运算符", ConstVar.DIVIDE));
                         displayTokens.add(new Token(lineNum, i, "运算符", ConstVar.DIVIDE));
                         i--;
@@ -281,12 +276,10 @@ public class Lexer {
                         break;
                     case 5:
                         if(ch == '='){
-                            node.add(new TreeNode("运算符" + ConstVar.EQUAL));
                             tokens.add(new Token(lineNum, i, "运算符", ConstVar.EQUAL));
                             displayTokens.add(new Token(lineNum, i, "运算符", ConstVar.EQUAL));
                             state = 0 ;
                         }else{
-                            node.add(new TreeNode("运算符" + ConstVar.ASSIGN));
                             tokens.add(new Token(lineNum, i, "运算符", ConstVar.ASSIGN));
                             displayTokens.add(new Token(lineNum, i, "运算符", ConstVar.ASSIGN));
                             i--;
@@ -295,13 +288,11 @@ public class Lexer {
                         break;
                     case 6:
                         if (ch == '>'){
-                            node.add(new TreeNode("运算符 ： " + ConstVar.NEQUAL));
                             tokens.add(new Token(lineNum, i, "运算符",
                                     ConstVar.NEQUAL));
                             displayTokens.add(new Token(lineNum, i, "运算符",
                                     ConstVar.NEQUAL));
                         }else {
-                            node.add(new TreeNode("运算符" + ConstVar.LT));
                             tokens.add(new Token(lineNum, i, "运算符", ConstVar.LT));
                             displayTokens.add(new Token(lineNum, i, "运算符", ConstVar.LT));
                             i--;
@@ -309,7 +300,6 @@ public class Lexer {
                        state = 0;
                        break;
                     case 7:
-                        node.add(new TreeNode("运算符" + ConstVar.GT));
                         tokens.add(new Token(lineNum, i, "运算符", ConstVar.GT));
                         displayTokens.add(new Token(lineNum, i, "运算符", ConstVar.GT));
                         i--;
@@ -322,11 +312,9 @@ public class Lexer {
                             end = i;
                             String id = mlText.substring(begin, end);
                             if (matchInteger(id)) {
-                                node.add(new TreeNode("整数 ：" + id));
                                 tokens.add(new Token(lineNum, begin + 1, "整数", id));
                                 displayTokens.add(new Token(lineNum, begin + 1, "整数", id));
                             }else if (matchReal(id)){
-                                node.add(new TreeNode("实数 ：" + id));
                                 tokens.add(new Token(lineNum, begin + 1, "实数", id));
                                 displayTokens.add(new Token(lineNum, begin + 1, "实数", id));
                             }
@@ -341,20 +329,16 @@ public class Lexer {
                             end = i;
                             String id = mlText.substring(begin, end);
                             if (isKey(id)) {
-                                node.add(new TreeNode("关键字: " + id));
                                 tokens.add(new Token(lineNum, begin + 1, "关键字", id));
                                 displayTokens.add(new Token(lineNum, begin + 1, "关键字", id));
                             }else if (matchID(id)) {
-                                node.add(new TreeNode("标识符: " + id));
                                 tokens.add(new Token(lineNum, begin + 1, "标识符", id));
                                 displayTokens.add(new Token(lineNum, begin + 1, "标识符", id));
                             }else if(isOperator(id)){
                                 if(id.equals("div")) {
-                                    node.add(new TreeNode("运算符: " + ConstVar.DIV));
                                     tokens.add(new Token(lineNum, begin + 1, "运算符", ConstVar.DIV));
                                     displayTokens.add(new Token(lineNum, begin + 1, "运算符", ConstVar.DIV));
                                 }else if (id.equals("mod")){
-                                    node.add(new TreeNode("运算符: " + ConstVar.MOD));
                                     tokens.add(new Token(lineNum, begin + 1, "运算符", ConstVar.MOD));
                                     displayTokens.add(new Token(lineNum, begin + 1, "运算符", ConstVar.MOD));
                                 }
@@ -367,12 +351,10 @@ public class Lexer {
                         if (ch == '"') {
                             end = i;
                             String string = mlText.substring(begin, end);
-                            node.add(new TreeNode("字符串 ： " + string));
                             tokens.add(new Token(lineNum, begin + 1, "字符串",
                                     string));
                             displayTokens.add(new Token(lineNum, begin + 1,
                                     "字符串", string));
-                            node.add(new TreeNode("分隔符 ： " + ConstVar.DQ));
                             tokens.add(new Token(lineNum, end + 1, "分隔符",
                                     ConstVar.DQ));
                             displayTokens.add(new Token(lineNum, end + 1,
