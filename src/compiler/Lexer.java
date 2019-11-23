@@ -1,15 +1,11 @@
 package compiler;
 
-import jdk.jshell.execution.JdiInitiator;
 import structure.ConstVar;
 import structure.Token;
 import structure.TreeNode;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.StringReader;
+import java.io.*;
 import java.util.ArrayList;
-import java.util.Scanner;
 
 /**
  * Standard ML词法分析类
@@ -24,22 +20,12 @@ public class Lexer {
     private ArrayList<Token> tokens=new ArrayList<Token>();
     //分析后得到的所有Token集，包含注释，空格等
     private ArrayList<Token> displayTokens=new ArrayList<Token>();
-    //读取ML文件文本
-    private BufferedReader reader;
-
-    public boolean isNotation(){
-        return isNotation;
-    }
-
-    public void setNotation(boolean isNotation){
-        this.isNotation=isNotation;
-    }
 
     public ArrayList<Token> getTokens(){
         return tokens;
     }
 
-    private void setTokens(ArrayList<Token> tokens){
+    public void setTokens(ArrayList<Token> tokens){
         this.tokens=tokens;
     }
 
@@ -47,7 +33,7 @@ public class Lexer {
         return displayTokens;
     }
 
-    private void setDisplayTokens(ArrayList<Token> displayToken){
+    public void setDisplayTokens(ArrayList<Token> displayToken){
         this.displayTokens = displayTokens;
     }
 
@@ -81,7 +67,7 @@ public class Lexer {
      * @return boolean
      */
     private static boolean matchInteger(String input){
-        return input.matches("^-?\\d+$") && !input.matches("^-?0{1,}\\d+$");
+        return input.matches("^-?\\d+$") && !input.matches("^-?0+\\d+$");
     }
 
     /**
@@ -118,9 +104,9 @@ public class Lexer {
         return input.equals("if") || input.equals("else") || input.equals("then")
                 || input.equals("val") || input.equals("true") || input.equals("false")
                 || input.equals("string") || input.equals("int") || input.equals("bool")
-                || input.equals("char") || input.equals("and") || input.equals("real")
-                || input.equals("let") || input.equals("local") || input.equals("in")
-                || input.equals("end") ;
+                || input.equals("char") ||  input.equals("real") || input.equals("let")
+                || input.equals("local") || input.equals("in") || input.equals("end")
+                || input.equals("type");
     }
 
     /**
@@ -134,7 +120,6 @@ public class Lexer {
         return input.equals("div") || input.equals("mod");
     }
 
-    //暂时还清楚该方法的作用
     private static int find(int begin,String str){
         if(begin>=str.length())
             return str.length();
@@ -152,32 +137,27 @@ public class Lexer {
     /**
      * 分析一行ML程序，并返回一行得到的TreeNode
      *
-     * @param mlText 一行ml程序
+     * @param mlTextByLine 一行ml程序
      *
      * @lineNum 行号
      *
-     * @return 一个树节点
      */
-    private TreeNode executeLine(String mlText, int lineNum){
-        //创建当前行的根节点
-        String content = "第" + lineNum + "行" + mlText;
-        TreeNode node = new TreeNode(content);
+    public void executeLine(String mlTextByLine, int lineNum){
         //添加词法分析每行结束的标志
-        mlText += "\n";
+        mlTextByLine += "\n";
         //每一行的长度
-        int length = mlText.length();
-        //switch的状态值，用来判断
+        int length = mlTextByLine.length();
+        //switch的状态值
         int state = 0;
         //记录token开始的位置
         int begin = 0;
-        //记录token结束的文职
-        int end = 0;
-        //逐个读取当前行的字符，进行分析（暂时忽略注释）
+        //记录token结束的位置
+        int end;
+        //逐个读取当前行的字符，进行分析
         for(int i = 0; i < length; i++){
             // ch保存着当前字符
-            char ch = mlText.charAt(i);
-            if(ch == '(' || ch == ')' || ch == ';' || ch == '{'
-                    || ch == '}' || ch == ',' || ch == '+' || ch == '~'
+            char ch = mlTextByLine.charAt(i);
+            if(ch == '(' || ch == ')' || ch == ';' || ch == ',' || ch == '+' || ch == '~'
                     || ch == '-' || ch == '*' || ch == '/'
                     || ch == '=' || ch == '<' || ch == '>' || ch == '"'
                     || isLetter(ch) || isDigit(ch) || ch == '.'
@@ -189,8 +169,11 @@ public class Lexer {
                     //循环程序开始时进入case 0
                     case 0:
                         //分隔符直接打印
-                        if(ch == '(' || ch == ')' || ch == '{' || ch == '}' || ch == ';' || ch == ',' || ch == ':')
-                            state = 0 ;
+                        if(ch == '(' || ch == ')' || ch == ';' || ch == ':') {
+                            state = 0;
+                            tokens.add(new Token(lineNum, i + 1, "分隔符", String.valueOf(ch)));
+                            displayTokens.add(new Token(lineNum, i + 1, "分隔符", String.valueOf(ch)));
+                        }
                         else if (ch == '+')
                             state = 1;
                         else if(ch == '-')
@@ -249,7 +232,6 @@ public class Lexer {
                     case 1:
                         tokens.add(new Token(lineNum, i, "运算符", ConstVar.PLUS));
                         displayTokens.add(new Token(lineNum,i,"运算符", ConstVar.PLUS));
-                        //如果没有，则会跳过一个字符
                         i--;
                         state = 0;
                         break;
@@ -310,7 +292,7 @@ public class Lexer {
                             state = 8;
                         }else{
                             end = i;
-                            String id = mlText.substring(begin, end);
+                            String id = mlTextByLine.substring(begin, end);
                             if (matchInteger(id)) {
                                 tokens.add(new Token(lineNum, begin + 1, "整数", id));
                                 displayTokens.add(new Token(lineNum, begin + 1, "整数", id));
@@ -318,7 +300,7 @@ public class Lexer {
                                 tokens.add(new Token(lineNum, begin + 1, "实数", id));
                                 displayTokens.add(new Token(lineNum, begin + 1, "实数", id));
                             }
-                            i = find(i, mlText);
+                            i = find(i, mlTextByLine);
                             state = 0;
                         }
                         break;
@@ -327,7 +309,7 @@ public class Lexer {
                             state = 9;
                         }else{
                             end = i;
-                            String id = mlText.substring(begin, end);
+                            String id = mlTextByLine.substring(begin, end);
                             if (isKey(id)) {
                                 tokens.add(new Token(lineNum, begin + 1, "关键字", id));
                                 displayTokens.add(new Token(lineNum, begin + 1, "关键字", id));
@@ -350,7 +332,7 @@ public class Lexer {
                     case 10:
                         if (ch == '"') {
                             end = i;
-                            String string = mlText.substring(begin, end);
+                            String string = mlTextByLine.substring(begin, end);
                             tokens.add(new Token(lineNum, begin + 1, "字符串",
                                     string));
                             displayTokens.add(new Token(lineNum, begin + 1,
@@ -361,6 +343,7 @@ public class Lexer {
                                     "分隔符", ConstVar.DQ));
                             state = 0;
                         }
+                        break;
                     case 11:
                        begin = i-1;
                        i--;
@@ -369,46 +352,36 @@ public class Lexer {
                 }
             }
         }
-        return node;
     }
-
     /**
-     * 按行读取ML程序，并执行executeLine方法
+     * 分析ML程序
      *
-     * @param mlText ML文本
-     * @return 词法分析结果跟节点
+     * @return 分析生成的TreeNode
      */
-    public TreeNode execute(String mlText) {
+    public void execute() {
         setTokens(new ArrayList<Token>());
         setDisplayTokens(new ArrayList<Token>());
-        StringReader stringReader = new StringReader(mlText);
-        String eachLine = "";
-        int lineNum = 1;
-        TreeNode root = new TreeNode("PROGRAM");
-        reader = new BufferedReader(stringReader);
-        while (eachLine != null) {
-            try {
-                eachLine = reader.readLine();
-                if (eachLine != null) {
-                    root.add((executeLine(eachLine, lineNum)));
+        try { // 防止文件建立或读取失败，用catch捕捉错误并打印，也可以throw
+            /* 读入TXT文件 */
+            String pathname = "/Users/zyyy/Downloads/test.txt";
+            File filename = new File(pathname);
+            InputStreamReader reader = new InputStreamReader(new FileInputStream(filename)); // 建立一个输入流对象reader
+            BufferedReader br = new BufferedReader(reader); // 建立一个对象，它把文件内容转成计算机能读懂的语言
+            String eachLine = "";
+            int lineNum = 1;
+            while (eachLine != null) {
+                try {
+                    eachLine = br.readLine();
+                    if (eachLine != null) {
+                        executeLine(eachLine, lineNum);
+                    }
+                    lineNum++;
+                } catch (IOException e) {
+                    System.err.println("读取文本时出错了！");
                 }
-                lineNum++;
-            } catch (IOException e) {
-                System.err.println("读取文本时出错了！");
             }
-        }
-        return root;
-    }
-
-    public static void main(String[] args){
-        Scanner input = new Scanner(System.in);
-        System.out.println("请输入ML文本: ");
-        String mltext = input.nextLine();
-        Lexer lexer = new Lexer();
-        while (!mltext.equals("\n")) {
-            lexer.execute(mltext);
-            mltext = input.next();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
-
 }

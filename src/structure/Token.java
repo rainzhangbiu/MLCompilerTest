@@ -9,10 +9,9 @@ public class Token {
     private int column;
     /* token内容*/
     private String content;
-    /*标识符类型*/
-    private String idKind;
 
-    public Token(int line,int column,String idKind,String kind) {
+
+    public Token(int line,int column,String kind, String content) {
         this.line = line;
         this.column=column;
         this.kind=kind;
@@ -47,10 +46,5 @@ public class Token {
         this.content=content;
     }
 
-    public String getIdKind(){
-        return idKind;
-    }
-    public void setIdKind(String idKind){
-        this.idKind=idKind;
-    }
+
 }

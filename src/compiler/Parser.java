@@ -419,7 +419,7 @@ public class Parser {
      */
     private TreeNode factor() {
         // 保存要返回的结点
-        TreeNode tempNode = null;
+        TreeNode tempNode;
         if (currentToken != null && currentToken.getKind().equals("整数")) {
             tempNode = new TreeNode("整数", currentToken.getContent(),
                     currentToken.getLine());
@@ -482,7 +482,7 @@ public class Parser {
      */
     private TreeNode add_op() {
         // 保存要返回的结点
-        TreeNode tempNode = null;
+        TreeNode tempNode;
         if (currentToken != null
                 && currentToken.getContent().equals(ConstVar.PLUS)) {
             tempNode = new TreeNode("运算符", ConstVar.PLUS, currentToken
@@ -508,7 +508,7 @@ public class Parser {
      */
     private TreeNode mul_op() {
         // 保存要返回的结点
-        TreeNode tempNode = null;
+        TreeNode tempNode;
         if (currentToken != null
                 && currentToken.getContent().equals(ConstVar.TIMES)) {
             tempNode = new TreeNode("运算符", ConstVar.TIMES, currentToken
@@ -537,7 +537,7 @@ public class Parser {
      */
     private TreeNode comparison_op() {
         // 保存要返回的结点
-        TreeNode tempNode = null;
+        TreeNode tempNode;
         if (currentToken != null
                 && currentToken.getContent().equals(ConstVar.LT)) {
             tempNode = new TreeNode("运算符", ConstVar.LT, currentToken.getLine());
