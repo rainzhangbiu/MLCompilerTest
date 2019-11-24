@@ -15,9 +15,9 @@ public class Main {
         Lexer lexer = new Lexer();
         lexer.execute();
         //展示DisplayTokens
-        ArrayList<Token> display = lexer.getDisplayTokens();
+        ArrayList<Token> display = lexer.getTokens();
         for (Token token : display) {
-            System.out.println("行号:" + token.getLine() + "  列号:" + token.getColumn() + "  内容:" + token.getKind());
+            System.out.println("行号:" + token.getLine() + "  列号:" + token.getColumn() + "  格式:" + token.getKind());
         }
 
         /**语法分析部分

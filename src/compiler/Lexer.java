@@ -78,7 +78,8 @@ public class Lexer {
      * @return boolean
      */
     private static boolean matchReal(String input){
-        return input.matches("^(-?\\\\d+)(\\\\.\\\\d+)+$");
+        return input.matches("^(-?\\d+)(\\.\\d+)+$")
+                && !input.matches("^(-?0{2,}+)(\\.\\d+)+$");
     }
 
     /**
@@ -158,7 +159,7 @@ public class Lexer {
             // ch保存着当前字符
             char ch = mlTextByLine.charAt(i);
             if(ch == '(' || ch == ')' || ch == ';' || ch == ',' || ch == '+' || ch == '~'
-                    || ch == '-' || ch == '*' || ch == '/'
+                    || ch == '-' || ch == '*' || ch == '/' || ch == ':'
                     || ch == '=' || ch == '<' || ch == '>' || ch == '"'
                     || isLetter(ch) || isDigit(ch) || ch == '.'
                     || String.valueOf(ch).equals(" ")
@@ -363,7 +364,7 @@ public class Lexer {
         setDisplayTokens(new ArrayList<Token>());
         try { // 防止文件建立或读取失败，用catch捕捉错误并打印，也可以throw
             /* 读入TXT文件 */
-            String pathname = "/Users/zyyy/Downloads/test.txt";
+            String pathname = "/Users/zyyy/Downloads/test5.txt";
             File filename = new File(pathname);
             InputStreamReader reader = new InputStreamReader(new FileInputStream(filename)); // 建立一个输入流对象reader
             BufferedReader br = new BufferedReader(reader); // 建立一个对象，它把文件内容转成计算机能读懂的语言
