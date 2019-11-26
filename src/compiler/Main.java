@@ -30,5 +30,11 @@ public class Main {
         parser.setErrorInfo("");
         parser.setErrorNum(0);
         TreeNode ast = parser.execute();
+
+        /**
+         * 语义分析部分
+         */
+        SemanticAnalysis sa = new SemanticAnalysis(ast);
+        sa.execute();
     }
 }
