@@ -100,7 +100,8 @@ public class SemanticAnalysis extends Thread {
             String content = currentNode.getContent();
             if (content.equals(ConstVar.INT) || content.equals(ConstVar.REAL)
                     || content.equals(ConstVar.BOOL)
-                    || content.equals(ConstVar.STRING)) {
+                    || content.equals(ConstVar.STRING)
+                    || content.equals(ConstVar.VAL)) {
                 forDeclare(currentNode);
             } else if (content.equals(ConstVar.ASSIGN)) {
                 forAssign(currentNode);
@@ -141,8 +142,7 @@ public class SemanticAnalysis extends Thread {
                             && root.getChildAt(index).getContent().equals(
                             ConstVar.ASSIGN)) {
                         // 获得变量的初始值结点
-                        TreeNode valueNode = root.getChildAt(index).getChildAt(
-                                0);
+                        TreeNode valueNode = root.getChildAt(2);
                         String value = valueNode.getContent();
                         if (content.equals(ConstVar.INT)) { // 声明int型变量
                             if (matchInteger(value)) {
@@ -312,7 +312,9 @@ public class SemanticAnalysis extends Thread {
                                 String error = "不能将算术表达式赋值给字符串型变量";
                                 error(error, valueNode.getLineNum());
                             }
-                        } else { // 声明bool型变量
+                        }else if(content.equals(ConstVar.VAL)){
+                            element.setValValue(value);
+                        }else{ // 声明bool型变量
                             if (matchInteger(value)) {
                                 // 如果是0或负数则记为false,其他记为true
                                 int i = Integer.parseInt(value);
@@ -704,8 +706,10 @@ public class SemanticAnalysis extends Thread {
                                 tempContent, level);
                         if (temp.getKind().equals(ConstVar.INT)) {
                             results[i] = temp.getIntValue();
-                        } else {
+                        } else if (temp.getKind().equals(ConstVar.REAL)){
                             results[i] = temp.getRealValue();
+                        }else{
+                            results[i] = temp.getValValue();
                         }
                     } else {
                         return false;
@@ -783,6 +787,8 @@ public class SemanticAnalysis extends Thread {
                     } else if (temp.getKind().equals(ConstVar.REAL)) {
                         results[i] = temp.getRealValue();
                         isInt = false;
+                    } else if(temp.getKind().equals(ConstVar.VAL)){
+                        results[i] = temp.getValValue();
                     }
                 } else {
                     return null;
@@ -803,14 +809,18 @@ public class SemanticAnalysis extends Thread {
         if (isInt) {
             int e1 = Integer.parseInt(results[0]);
             int e2 = Integer.parseInt(results[1]);
-            if (content.equals(ConstVar.PLUS))
-                return String.valueOf(e1 + e2);
-            else if (content.equals(ConstVar.MINUS))
-                return String.valueOf(e1 - e2);
-            else if (content.equals(ConstVar.TIMES))
-                return String.valueOf(e1 * e2);
-            else
-                return String.valueOf(e1 / e2);
+            if (content.equals(ConstVar.PLUS)){
+                System.out.print(String.valueOf(e1 + e2));
+                return String.valueOf(e1 + e2);}
+            else if (content.equals(ConstVar.MINUS)){
+                System.out.print(String.valueOf(e1 - e2));
+                return String.valueOf(e1 - e2);}
+            else if (content.equals(ConstVar.TIMES)){
+                System.out.print(String.valueOf(e1 * e2));
+                return String.valueOf(e1 * e2);}
+            else{
+                System.out.print(String.valueOf(e1 / e2));
+                return String.valueOf(e1 / e2);}
         } else {
             double e1 = Double.parseDouble(results[0]);
             double e2 = Double.parseDouble(results[1]);
@@ -936,7 +946,7 @@ public class SemanticAnalysis extends Thread {
             SymbolTableElement temp = table.getAllLevel(idName, level);
             // 变量未初始化
             if (temp.getIntValue().equals("") && temp.getRealValue().equals("")
-                    && temp.getStringValue().equals("")) {
+                    && temp.getStringValue().equals("") && temp.getValValue().equals("")) {
                 String error = "变量" + idName + "在使用前未初始化";
                 error(error, root.getLineNum());
                 return false;

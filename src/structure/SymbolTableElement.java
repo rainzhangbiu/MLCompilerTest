@@ -15,6 +15,8 @@ public class SymbolTableElement {
     private String realValue;
     /* 元素的字符串值 */
     private String stringValue;
+    /* 元素的默认值 */
+    private String valValue;
     /* 表明元素是否为数组,0表示不是,否则表示数组的大小 */
     private int arrayElementsNum;
 
@@ -26,6 +28,7 @@ public class SymbolTableElement {
         this.intValue = "";
         this.realValue = "";
         this.stringValue = "";
+        this.valValue="";
         this.arrayElementsNum = 0;
     }
 
@@ -102,4 +105,11 @@ public class SymbolTableElement {
         return this.toString().equals(element.toString());
     }
 
+    public String getValValue() {
+        return valValue;
+    }
+
+    public void setValValue(String valValue) {
+        this.valValue = valValue;
+    }
 }
