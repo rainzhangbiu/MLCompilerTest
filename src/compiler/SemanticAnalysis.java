@@ -13,8 +13,6 @@ import structure.TreeNode;
 /**
  * CMM语义分析器
  *
- * @author 吴文苑
- * @version 1.4
  */
 public class SemanticAnalysis extends Thread {
     /* 语义分析时的符号表 */
