@@ -86,6 +86,7 @@ public class SemanticAnalysis extends Thread {
         } else {
             errorMsg.append("该程序中共有" + errorNum + "个语义错误！\n");
         }
+        System.out.print(errorMsg.toString());
     }
 
     /**
@@ -102,9 +103,9 @@ public class SemanticAnalysis extends Thread {
                     || content.equals(ConstVar.BOOL)
                     || content.equals(ConstVar.STRING)
                     || content.equals(ConstVar.VAL)) {
-                forDeclare(currentNode);
+                forDeclare(currentNode);//声明语句
             } else if (content.equals(ConstVar.ASSIGN)) {
-                forAssign(currentNode);
+                forAssign(currentNode);//赋值语句
             } else if (content.equals(ConstVar.IF)) {
                 // 进入if语句，改变作用域
                 level++;
